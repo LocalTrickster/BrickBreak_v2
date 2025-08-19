@@ -5,7 +5,7 @@ export default {
   create: function () {
     this.score = 0;
 
-    // Paddle
+    
     this.paddleWidth = 160;
     this.paddleHeight = 30;
     this.paddle = this.add.rectangle(960, 1000, this.paddleWidth, this.paddleHeight, 0x3366ff);
@@ -14,7 +14,6 @@ export default {
     this.paddle.body.allowGravity = false;
     this.paddle.body.setCollideWorldBounds(true);
 
-    // Ball
     this.ballRadius = 18;
     this.ball = this.add.circle(960, 540, this.ballRadius, 0xffffff);
     this.physics.add.existing(this.ball);
@@ -23,7 +22,7 @@ export default {
     this.ball.body.setBounce(1, 1);
     this.ball.body.allowGravity = false;
 
-    // Bricks
+    
     this.brickRows = 6;
     this.brickCols = 14;
     this.brickWidth = 80;
@@ -51,7 +50,7 @@ export default {
       }
     }
 
-    // Paddle collision
+    
     this.physics.add.collider(this.ball, this.paddle, (ball, paddle) => {
       let diff = ball.x - paddle.x;
       let newVX = Phaser.Math.Clamp(diff * 8, -400, 400);
@@ -69,14 +68,14 @@ export default {
       }
     });
 
-    // Input
+  
     this.cursors = this.input.keyboard.createCursorKeys();
     this.rKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R);
 
-    // Score text
+    
     this.scoreText = this.add.text(16, 16, "Score: 0", { fontSize: "32px", fill: "#fff" });
 
-    // Launch ball
+    
     this.time.delayedCall(500, () => {
       if (this.ball.body.velocity.length() === 0) {
         let angleRanges = [
@@ -96,7 +95,7 @@ export default {
       }
     });
 
-    // Ground - restart game if ball touches ground
+    
     this.ground = this.add.zone(960, 1150, 1920, 150);
     this.physics.add.existing(this.ground, true);
     this.physics.add.overlap(this.ball, this.ground, () => {
@@ -105,13 +104,13 @@ export default {
   },
 
   update: function () {
-    // Manual restart
+
     if (Phaser.Input.Keyboard.JustDown(this.rKey)) {
       this.scene.restart();
       return;
     }
 
-    // Paddle movement
+  
     if (this.cursors.left.isDown) {
       this.paddle.body.setVelocityX(-700);
     } else if (this.cursors.right.isDown) {
@@ -120,14 +119,14 @@ export default {
       this.paddle.body.setVelocityX(0);
     }
 
-    // Keep paddle within bounds
+   
     if (this.paddle.x < this.paddle.width / 2) {
       this.paddle.x = this.paddle.width / 2;
     } else if (this.paddle.x > 1920 - this.paddle.width / 2) {
       this.paddle.x = 1920 - this.paddle.width / 2;
     }
 
-    // Clamp ball speed
+    
     if (this.ball.body && this.ball.body.velocity) {
       let maxSpeed = 500;
       let velocity = this.ball.body.velocity;
@@ -137,7 +136,7 @@ export default {
       }
     }
 
-    // Brick collision and bounce
+   
     for (let i = 0; i < this.bricks.length; i++) {
       let brick = this.bricks[i];
       if (!brick.active) continue;
@@ -162,7 +161,7 @@ export default {
         this.score += 10;
         this.scoreText.setText("Score: " + this.score);
 
-        // Slightly increase ball speed
+        
         const speedIncrease = 10;
         let velocity = this.ball.body.velocity;
         let newSpeed = velocity.length() + speedIncrease;
@@ -171,13 +170,12 @@ export default {
         let newVelocity = velocity.clone().normalize().scale(newSpeed);
         this.ball.body.setVelocity(newVelocity.x, newVelocity.y);
 
-        // Restart game if all bricks are gone
         if (this.bricks.every(b => !b.active)) {
           this.scene.restart();
           return;
         }
 
-        break; // Only handle one brick per frame
+        break; 
       }
     }
   }
