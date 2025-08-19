@@ -1,5 +1,3 @@
-// Arkanoid-like game using only this.add.* objects for ball and bricks, no class syntax
-
 export default {
   key: "hello-world",
   preload: function () {},
@@ -25,7 +23,7 @@ export default {
     this.ball.body.setBounce(1, 1);
     this.ball.body.allowGravity = false;
 
-    // Bricks (array, not group)
+    // Bricks
     this.brickRows = 6;
     this.brickCols = 14;
     this.brickWidth = 80;
@@ -39,11 +37,7 @@ export default {
 
     for (let y = 0; y < this.brickRows; y++) {
       for (let x = 0; x < this.brickCols; x++) {
-        let color = Phaser.Display.Color.GetColor(
-          100 + y * 20,
-          100 + x * 10,
-          255
-        );
+        let color = Phaser.Display.Color.GetColor(100 + y * 20, 100 + x * 10, 255);
         let brick = this.add.rectangle(
           startX + x * (this.brickWidth + this.brickSpacingX),
           150 + y * (this.brickHeight + this.brickSpacingY),
@@ -102,19 +96,21 @@ export default {
       }
     });
 
-    // Ground
+    // Ground - restart game if ball touches ground
     this.ground = this.add.zone(960, 1150, 1920, 150);
     this.physics.add.existing(this.ground, true);
-    this.physics.add.overlap(
-      this.ball,
-      this.ground,
-      () => { this.scene.restart(); },
-      null,
-      this
-    );
+    this.physics.add.overlap(this.ball, this.ground, () => {
+      this.scene.restart();
+    }, null, this);
   },
 
   update: function () {
+    // Manual restart
+    if (Phaser.Input.Keyboard.JustDown(this.rKey)) {
+      this.scene.restart();
+      return;
+    }
+
     // Paddle movement
     if (this.cursors.left.isDown) {
       this.paddle.body.setVelocityX(-700);
@@ -125,11 +121,10 @@ export default {
     }
 
     // Keep paddle within bounds
-    const paddleWidth = this.paddle.width;
-    if (this.paddle.x < paddleWidth / 2) {
-      this.paddle.x = paddleWidth / 2;
-    } else if (this.paddle.x > 1920 - paddleWidth / 2) {
-      this.paddle.x = 1920 - paddleWidth / 2;
+    if (this.paddle.x < this.paddle.width / 2) {
+      this.paddle.x = this.paddle.width / 2;
+    } else if (this.paddle.x > 1920 - this.paddle.width / 2) {
+      this.paddle.x = 1920 - this.paddle.width / 2;
     }
 
     // Clamp ball speed
@@ -137,27 +132,21 @@ export default {
       let maxSpeed = 500;
       let velocity = this.ball.body.velocity;
       if (velocity.length() > maxSpeed) {
-        velocity.normalize().scale(maxSpeed);
+        velocity = velocity.normalize().scale(maxSpeed);
         this.ball.body.setVelocity(velocity.x, velocity.y);
       }
     }
 
-    // --- Manual brick collision detection ---
+    // Brick collision and bounce
     for (let i = 0; i < this.bricks.length; i++) {
       let brick = this.bricks[i];
       if (!brick.active) continue;
+
       if (this.physics.world.overlap(this.ball, brick)) {
-        // --- Bounce calculation ---
         let ballRect = this.ball.getBounds();
         let brickRect = brick.getBounds();
-
-        let ballCenterX = ballRect.centerX;
-        let ballCenterY = ballRect.centerY;
-        let brickCenterX = brickRect.centerX;
-        let brickCenterY = brickRect.centerY;
-
-        let dx = ballCenterX - brickCenterX;
-        let dy = ballCenterY - brickCenterY;
+        let dx = ballRect.centerX - brickRect.centerX;
+        let dy = ballRect.centerY - brickRect.centerY;
 
         let overlapX = (brick.width / 2 + this.ballRadius) - Math.abs(dx);
         let overlapY = (brick.height / 2 + this.ballRadius) - Math.abs(dy);
@@ -170,7 +159,6 @@ export default {
 
         brick.active = false;
         brick.visible = false;
-        brick.body.enable = false;
         this.score += 10;
         this.scoreText.setText("Score: " + this.score);
 
@@ -183,11 +171,12 @@ export default {
         let newVelocity = velocity.clone().normalize().scale(newSpeed);
         this.ball.body.setVelocity(newVelocity.x, newVelocity.y);
 
-        // Win condition
-        if (this.bricks.filter(b => b.active).length === 0) {
-          this.ball.body.setVelocity(0, 0);
-          // You can add a win condition here if needed
+        // Restart game if all bricks are gone
+        if (this.bricks.every(b => !b.active)) {
+          this.scene.restart();
+          return;
         }
+
         break; // Only handle one brick per frame
       }
     }
