@@ -11,10 +11,10 @@ export default {
     this.score = 0;
 
     // Paddle
-    this.paddle = new Paddle(this, 960, 1000);
+    this.paddle = new paddle(this, 960, 1000);
 
     // Ball
-    this.ball = new Ball(this, 960, 540);
+    this.ball = new ball(this, 960, 540);
 
     // Bricks
     this.brickRows = 6;
@@ -31,7 +31,7 @@ export default {
     for (let y = 0; y < this.brickRows; y++) {
       for (let x = 0; x < this.brickCols; x++) {
         let color = Phaser.Display.Color.GetColor(100 + y * 20, 100 + x * 10, 255);
-        let brick = new Brick(
+        let brick = new brick(
           this,
           startX + x * (this.brickWidth + this.brickSpacingX),
           150 + y * (this.brickHeight + this.brickSpacingY),
