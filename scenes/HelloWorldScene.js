@@ -1,7 +1,7 @@
 // src/HelloWorldScene.js
-import paddle from "./objects/paddle.js";
-import ball from "./objects/ball.js";
-import brick from "./objects/brick.js";
+import Paddle from "./objects/Paddle.js";
+import Ball from "./objects/Ball.js";
+import Brick from "./objects/Brick.js";
 
 export default {
   key: "hello-world",
@@ -11,10 +11,10 @@ export default {
     this.score = 0;
 
     // Paddle
-    this.paddle = new paddle(this, 960, 1000);
+    this.paddle = new Paddle(this, 960, 1000);
 
     // Ball
-    this.ball = new ball(this, 960, 540);
+    this.ball = new Ball(this, 960, 540);
 
     // Bricks
     this.brickRows = 6;
@@ -31,7 +31,7 @@ export default {
     for (let y = 0; y < this.brickRows; y++) {
       for (let x = 0; x < this.brickCols; x++) {
         let color = Phaser.Display.Color.GetColor(100 + y * 20, 100 + x * 10, 255);
-        let brick = new brick(
+        let brick = new Brick(
           this,
           startX + x * (this.brickWidth + this.brickSpacingX),
           150 + y * (this.brickHeight + this.brickSpacingY),
@@ -39,7 +39,7 @@ export default {
           this.brickHeight,
           color
         );
-        this.bricks.push(brick);
+        this.bricks.push(Brick);
       }
     }
 

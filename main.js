@@ -1,4 +1,8 @@
+import paddle from "./scenes/objects/Paddle.js";
+import ball from "./scenes/objects/Ball.js";
+import brick from "./scenes/objects/Brick.js";
 import HelloWorldScene from "./scenes/HelloWorldScene.js";
+
 
 // Create a new Phaser config object
 const config = {
@@ -27,7 +31,7 @@ const config = {
   // List of scenes to load
   // Only the first scene will be shown
   // Remember to import the scene before adding it to the list
-  scene: [HelloWorldScene],
+  scene: [ paddle, ball, brick, HelloWorldScene],
 };
 
 // Create a new Phaser game instance
