@@ -1,7 +1,7 @@
 // src/HelloWorldScene.js
-import Paddle from "./objects/Paddle.js";
-import Ball from "./objects/Ball.js";
-import Brick from "./objects/Brick.js";
+import paddle from "./objects/paddle.js";
+import ball from "./objects/ball.js";
+import brick from "./objects/brick.js";
 
 export default {
   key: "hello-world",
@@ -134,3 +134,4 @@ export default {
     }
   }
 };
+//hola 
