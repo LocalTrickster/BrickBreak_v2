@@ -9,11 +9,10 @@ export default {
 
   create: function () {
     this.score = 0;
+    this.hasWon = false;
 
-    // Paddle
+    // Paddle and Ball (custom classes)
     this.paddle = new Paddle(this, 960, 1000);
-
-    // Ball
     this.ball = new Ball(this, 960, 540);
 
     // Bricks
@@ -31,6 +30,7 @@ export default {
     for (let y = 0; y < this.brickRows; y++) {
       for (let x = 0; x < this.brickCols; x++) {
         let color = Phaser.Display.Color.GetColor(100 + y * 20, 100 + x * 10, 255);
+        // create Brick instance and push the instance (fix)
         let brick = new Brick(
           this,
           startX + x * (this.brickWidth + this.brickSpacingX),
@@ -39,7 +39,7 @@ export default {
           this.brickHeight,
           color
         );
-        this.bricks.push(Brick);
+        this.bricks.push(brick);
       }
     }
 
@@ -55,40 +55,38 @@ export default {
     // Score
     this.scoreText = this.add.text(16, 16, "Score: 0", { fontSize: "32px", fill: "#fff" });
 
-    // Launch ball
-    this.time.delayedCall(500, () => {
-      this.ball.launch();
-    });
+    // Win text (hidden)
+    this.winText = this.add.text(960, 540, "", { fontSize: "48px", fill: "#0f0" })
+      .setOrigin(0.5)
+      .setVisible(false);
 
-    // Ground = lose zone
+    // Launch ball
+    this.time.delayedCall(500, () => { this.ball.launch(); });
+
+    // Ground = lose zone (instant restart)
     this.ground = this.add.zone(960, 1150, 1920, 150);
     this.physics.add.existing(this.ground, true);
-    this.physics.add.overlap(this.ball, this.ground, () => {
-      this.scene.restart();
-    }, null, this);
+    this.physics.add.overlap(this.ball, this.ground, () => { this.scene.restart(); }, null, this);
   },
 
   update: function () {
+    // R always restarts
     if (Phaser.Input.Keyboard.JustDown(this.rKey)) {
       this.scene.restart();
       return;
     }
 
-    // Paddle movement
-    if (this.cursors.left.isDown) {
-      this.paddle.moveLeft(700);
-    } else if (this.cursors.right.isDown) {
-      this.paddle.moveRight(700);
-    } else {
-      this.paddle.stop();
-    }
+    // If won, stop handling game logic but do NOT disable ball so it can continue
+    if (this.hasWon) return;
 
+    // Paddle movement
+    if (this.cursors.left.isDown) this.paddle.moveLeft(700);
+    else if (this.cursors.right.isDown) this.paddle.moveRight(700);
+    else this.paddle.stop();
     this.paddle.constrainToScreen(1920);
 
     // Ball speed limit
-    if (this.ball.body && this.ball.body.velocity) {
-      this.ball.clampSpeed(500);
-    }
+    if (this.ball.body && this.ball.body.velocity) this.ball.clampSpeed(500);
 
     // Brick collisions
     for (let i = 0; i < this.bricks.length; i++) {
@@ -96,6 +94,7 @@ export default {
       if (!brick.active) continue;
 
       if (this.physics.world.overlap(this.ball, brick)) {
+        // bounce logic (same as before)
         let ballRect = this.ball.getBounds();
         let brickRect = brick.getBounds();
         let dx = ballRect.centerX - brickRect.centerX;
@@ -104,17 +103,14 @@ export default {
         let overlapX = (brick.width / 2 + this.ball.radius) - Math.abs(dx);
         let overlapY = (brick.height / 2 + this.ball.radius) - Math.abs(dy);
 
-        if (overlapX < overlapY) {
-          this.ball.body.setVelocityX(-this.ball.body.velocity.x);
-        } else {
-          this.ball.body.setVelocityY(-this.ball.body.velocity.y);
-        }
+        if (overlapX < overlapY) this.ball.body.setVelocityX(-this.ball.body.velocity.x);
+        else this.ball.body.setVelocityY(-this.ball.body.velocity.y);
 
         brick.hit();
         this.score += 10;
         this.scoreText.setText("Score: " + this.score);
 
-        // Speed up
+        // speed up
         const speedIncrease = 10;
         let velocity = this.ball.body.velocity;
         let newSpeed = velocity.length() + speedIncrease;
@@ -123,10 +119,12 @@ export default {
         let newVelocity = velocity.clone().normalize().scale(newSpeed);
         this.ball.body.setVelocity(newVelocity.x, newVelocity.y);
 
-        // Win check
+        // Win check only after a brick was destroyed
         if (this.bricks.every(b => !b.active)) {
-          this.scene.restart();
-          return;
+          // show win message but DO NOT stop or disable the ball
+          this.hasWon = true;
+          this.winText.setText("You win, press the R button to reset");
+          this.winText.setVisible(true);
         }
 
         break;
@@ -134,4 +132,5 @@ export default {
     }
   }
 };
-//hola 
+//hola como estan
+//A
